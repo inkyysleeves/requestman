@@ -11,6 +11,7 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+use App\Http\Controllers\RequestController;
+
+Route::get('/', 'RequestController@index');
+Route::resource('request', 'RequestController');
