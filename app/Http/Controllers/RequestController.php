@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 
 class RequestController extends Controller
 {
@@ -30,7 +31,7 @@ class RequestController extends Controller
      */
     public function create()
     {
-        //
+        return view('create');
     }
 
     /**
@@ -41,9 +42,25 @@ class RequestController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        $this->validate($request, [
+            'text' => 'required',
+            'body' => 'required'
+        ]);
 
+        $client = new Client();
+
+        try {
+            $response = $client->post('http://localhost:8888/10%20projects%20pt1/itemapi/public/api/items?text=' . $request->input('text') . '&body=' . $request->input('body'));
+        } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $msg = $e->getResponse();
+            } else {
+                $msg = 'The Item was not added.';
+            }
+            return redirect()->to('/')->with('error', $msg);
+        }
+        return redirect()->to('/')->with('success', 'Item added successfully');
+    }
     /**
      * Display the specified resource.
      *
@@ -63,7 +80,10 @@ class RequestController extends Controller
      */
     public function edit($id)
     {
-        //
+        $client = new Client();
+        $response = $client->get('http://localhost:8888/10%20projects%20pt1/itemapi/public/api/items/'.$id);
+        $item = json_decode($response->getBody()->getContents());
+        return view('edit')->with('item', $item);
     }
 
     /**
@@ -75,7 +95,24 @@ class RequestController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $this->validate($request, [
+            'text' => 'required',
+            'body' => 'required'
+        ]);
+
+        $client = new Client();
+
+        try {
+            $response = $client->post('http://localhost:8888/10%20projects%20pt1/itemapi/public/api/items/'.$id.'?text=' . $request->input('text') . '&body=' . $request->input('body').'&_method=PUT');
+        } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $msg = $e->getResponse();
+            } else {
+                $msg = 'The Item was not added.';
+            }
+            return redirect()->to('/')->with('error', $msg);
+        }
+        return redirect()->to('/')->with('success', 'Item updated successfully');
     }
 
     /**
